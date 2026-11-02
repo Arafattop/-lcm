@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Моделирование и оптимизация смешивания ЛКМ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{font-family:system-ui,"Segoe UI",Arial,sans-serif;margin:0;background:#F4F5FB;color:#081073;line-height:1.5}
+header{background:#fff;padding:14px 20px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;box-shadow:0 2px 12px #08107318}
+header h1{font-size:1.2rem;font-weight:800;color:#081073;margin:0 0 10px}
+nav{display:flex;gap:8px;flex-wrap:wrap}
+nav button{background:#EEF0FB;color:#1924B1;border:0;border-radius:999px;padding:8px 16px;cursor:pointer;font-size:.9rem;font-weight:600;transition:.2s}
+nav button:hover{background:#DDE1F8}
+nav button.on{background:#1924B1;color:#fff}
+main{max-width:1200px;margin:auto;padding:20px}
+.sec{display:none;background:#fff;border-radius:24px;padding:26px;box-shadow:0 4px 18px #08107314}
+.sec.active{display:block}
+h2{color:#081073;font-size:1.6rem;font-weight:800;margin-top:0}
+h3{color:#2F3584}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+label{display:block;font-size:.9rem;font-weight:600;color:#2F3584;margin:12px 0 4px}
+input[type=number]{width:100%;padding:11px 14px;border:0;background:#F1F2F8;border-radius:16px;font-size:1rem;color:#081073;outline:none}
+input[type=number]:focus{box-shadow:0 0 0 2px #7279D8}
+input[type=range]{width:100%;accent-color:#1924B1}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{background:#1924B1;color:#fff;border:0;border-radius:999px;padding:11px 20px;cursor:pointer;font-size:.95rem;font-weight:700;transition:.2s}
+.btn:hover{background:#081073}
+.btn.y{background:#FFE400;color:#081073}
+.btn.y:hover{background:#FFDA73}
+.btn.g{background:#EEF0FB;color:#1924B1}
+.btn.g:hover{background:#DDE1F8}
+.err{display:none;background:#FFDA73;color:#081073;padding:10px 14px;border-radius:16px;margin-top:10px;font-size:.9rem;font-weight:500}
+.chart{position:relative;height:320px;width:100%;background:#fff;border-radius:20px;padding:8px}
+.formula{font-family:Cambria,Georgia,serif;background:linear-gradient(135deg,#1924B1,#4E10AE);color:#fff;padding:16px 18px;border-radius:20px;overflow-x:auto;font-size:1rem;margin-bottom:12px}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+td,th{border:0;border-bottom:1px solid #EEF0FB;padding:9px 6px;text-align:center}
+th{background:#EEF0FB;color:#2F3584;font-weight:700}
+th:first-child{border-radius:12px 0 0 12px}th:last-child{border-radius:0 12px 12px 0}
+.ok{color:#fff;background:#4E10AE;padding:2px 10px;border-radius:999px;font-weight:600}
+.bad{color:#081073;background:#FFBB00;padding:2px 10px;border-radius:999px;font-weight:600}
+.res{font-size:1.05rem;line-height:1.9;background:#F1F2F8;border-radius:20px;padding:14px 16px;margin-top:12px}
+svg{max-width:100%;height:auto;background:#F7F8FD;border-radius:20px}
+p{margin:.5em 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Моделирование и оптимизация технологического процесса смешивания ЛКМ</h1>
+  <nav>
+    <button class="on" data-t="home">Главная</button>
+    <button data-t="theory">Теория</button>
+    <button data-t="model">Мат. модель</button>
+    <button data-t="sim">Моделирование</button>
+    <button data-t="viz">Визуализация</button>
+    <button data-t="opt">Оптимизация</button>
+    <button data-t="results">Результаты и выводы</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- 1. HOME -->
+<section id="home" class="sec active">
+  <h2>Главная страница</h2>
+  <p><b>Тема:</b> моделирование процесса смешивания компонентов при приготовлении лакокрасочных материалов (ЛКМ).</p>
+  <p><b>Цель работы:</b> разработать интерактивное веб-приложение для математического моделирования, визуализации и оптимизации процесса смешивания.</p>
+  <p><b>Задачи:</b> построить модель однородности смеси; исследовать влияние скорости вращения мешалки и времени смешивания; найти режим с минимальными условными энергозатратами при заданной однородности; сравнить режимы и сформулировать выводы.</p>
+  <p><b>Описание процесса:</b> в смесительный агрегат загружаются компоненты G<sub>1</sub> (смола с растворителем) и G<sub>2</sub> (растворитель). Мешалка перемешивает их, и на выходе получается готовый ЛКМ с заданной степенью однородности.</p>
+  <p>Навигация по разделам — в меню вверху. Параметры процесса меняются в разделе «Моделирование», результаты пересчитываются автоматически.</p>
+</section>
+
+<!-- 2. THEORY -->
+<section id="theory" class="sec">
+  <h2>Теоретическая часть</h2>
+  <p><b>Принцип работы смесителя.</b> Смесительный агрегат объединяет жидкие компоненты в однородную массу. Мешалка, вращаясь с заданной скоростью n (об/мин), создаёт поток и распределяет компоненты по объёму. Чем интенсивнее перемешивание и дольше оно длится, тем выше однородность смеси.</p>
+  <p><b>Основные технологические параметры:</b></p>
+  <p>— объём смеси V, л;<br>— скорость вращения мешалки n, об/мин (допустимо 100–500);<br>— время смешивания t, мин (допустимо 1–20);<br>— коэффициент интенсивности смешивания k;<br>— требуемая степень однородности H<sub>тр</sub>, %.</p>
+  <p><b>Закон сохранения материи в динамике:</b> приход = убыль + приращение. Для смесителя с компонентами G<sub>1</sub>, G<sub>2</sub> и концентрациями C<sub>1</sub>, C<sub>2</sub> получается дифференциальная модель T·dC/dt + C = P, где G = G<sub>1</sub> + G<sub>2</sub>, T = V/G — постоянная времени, P = (G<sub>1</sub>C<sub>1</sub> + G<sub>2</sub>C<sub>2</sub>)/G.</p>
+</section>
+
+<!-- 3. MATH MODEL -->
+<section id="model" class="sec">
+  <h2>Математическая модель</h2>
+  <p><b>1. Однородность смеси:</b></p>
+  <div class="formula">H(t, n) = 100 · (1 − e<sup>−k·n·t</sup>), где H — однородность, %; t — время, мин; n — скорость, об/мин; k — коэффициент интенсивности.</div>
+  <p><b>2. Условные энергозатраты:</b></p>
+  <div class="formula">E(n, t) = 0,0001 · n² · t</div>
+  <p><b>3. Время, необходимое для требуемой однородности H<sub>тр</sub>:</b></p>
+  <div class="formula">t<sub>тр</sub> = −ln(1 − H<sub>тр</sub>/100) / (k·n)</div>
+  <p><b>4. Концентрация ЛКМ (решение дифференциальной модели T·dC/dt + C = P):</b></p>
+  <div class="formula">C(t) = C<sub>0</sub>·e<sup>−t/T</sup> + P·(1 − e<sup>−t/T</sup>)</div>
+  <p><b>Оптимизационная задача:</b></p>
+  <div class="formula">min E(n, t) при H(t, n) ≥ H<sub>тр</sub>, 100 ≤ n ≤ 500, 1 ≤ t ≤ 20</div>
+
+  <h3>Расчёт концентрации C(t)</h3>
+  <div class="grid">
+    <div>
+      <label>G<sub>1</sub> — масса смолы</label><input id="G1" type="number" value="60" step="any" oninput="calcC()">
+      <label>C<sub>1</sub> — растворитель в смоле, %</label><input id="C1" type="number" value="20" step="any" oninput="calcC()">
+      <label>G<sub>2</sub> — масса растворителя</label><input id="G2" type="number" value="40" step="any" oninput="calcC()">
+      <label>C<sub>2</sub> — концентрация растворителя, % (по условию 100)</label><input id="C2" type="number" value="100" step="any" oninput="calcC()">
+      <label>V — объём смесителя, л</label><input id="V" type="number" value="100" step="any" oninput="onSim()">
+      <label>C<sub>0</sub> — начальная концентрация, %</label><input id="C0" type="number" value="20" step="any" oninput="calcC()">
+      <div id="cErr" class="err"></div>
+    </div>
+    <div>
+      <div class="formula" id="cFormula"></div>
+      <div class="res" id="cRes"></div>
+      <div class="chart"><canvas id="chC"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. SIMULATION -->
+<section id="sim" class="sec">
+  <h2>Моделирование</h2>
+  <div class="grid">
+    <div>
+      <label>Объём смеси V, л</label>
+      <input type="number" id="Vv" value="100" step="any" oninput="syncV();onSim()">
+      <label>Скорость вращения мешалки n: <b id="nVal">300</b> об/мин (100–500)</label>
+      <input type="range" id="n" min="100" max="500" step="1" value="300" oninput="onSim()">
+      <label>Время смешивания t: <b id="tVal">10</b> мин (1–20)</label>
+      <input type="range" id="t" min="1" max="20" step="0.1" value="10" oninput="onSim()">
+      <label>Коэффициент интенсивности k</label>
+      <input type="number" id="k" value="0.001" step="any" oninput="onSim()">
+      <label>Требуемая однородность H<sub>тр</sub>, %</label>
+      <input type="number" id="Hr" value="95" step="any" oninput="onSim()">
+      <div id="simErr" class="err"></div>
+      <div class="btns">
+        <button class="btn" onclick="onSim()">Рассчитать</button>
+        <button class="btn g" onclick="resetAll()">Сбросить параметры</button>
+      </div>
+    </div>
+    <div>
+      <div class="formula" id="formula"></div>
+      <div class="res">
+        Однородность H: <span id="resH"></span><br>
+        Время до H<sub>тр</sub>: <span id="resTr"></span><br>
+        Условные энергозатраты E: <span id="resE"></span><br>
+        <span id="resOk"></span>
+      </div>
+      <div style="margin-top:12px">
+        <svg viewBox="0 0 520 220" role="img" aria-label="Схема смесительной установки">
+          <rect x="20" y="30" width="110" height="36" rx="6" fill="#fde68a" stroke="#92400e"/>
+          <text x="75" y="53" text-anchor="middle" font-size="12">G1: смола (C1 %)</text>
+          <rect x="20" y="150" width="110" height="36" rx="6" fill="#bae6fd" stroke="#0369a1"/>
+          <text x="75" y="173" text-anchor="middle" font-size="12">G2: растворитель</text>
+          <line x1="130" y1="48" x2="200" y2="75" stroke="#334155" stroke-width="4"/>
+          <line x1="130" y1="168" x2="200" y2="140" stroke="#334155" stroke-width="4"/>
+          <rect x="200" y="55" width="150" height="140" rx="10" fill="#e2e8f0" stroke="#334155" stroke-width="3"/>
+          <line x1="275" y1="20" x2="275" y2="130" stroke="#334155" stroke-width="5"/>
+          <rect x="245" y="120" width="60" height="10" fill="#334155"/>
+          <line x1="350" y1="125" x2="420" y2="125" stroke="#334155" stroke-width="4"/>
+          <rect x="420" y="100" width="90" height="50" rx="6" fill="#c4b5fd" stroke="#5b21b6"/>
+          <text x="465" y="130" text-anchor="middle" font-size="12">ЛКМ, C(t)</text>
+          <text x="275" y="212" text-anchor="middle" font-size="12">Мешалка: n об/мин, t мин</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. VISUALIZATION -->
+<section id="viz" class="sec">
+  <h2>Визуализация</h2>
+  <div class="grid">
+    <div><div class="chart"><canvas id="chT"></canvas></div></div>
+    <div><div class="chart"><canvas id="chN"></canvas></div></div>
+  </div>
+  <p style="font-size:.9rem;color:#475569">Графики обновляются при изменении параметров в разделе «Моделирование». Сплошная линия — текущий режим, пунктир — требуемая однородность.</p>
+</section>
+
+<!-- 6. OPTIMIZATION -->
+<section id="opt" class="sec">
+  <h2>Оптимизация</h2>
+  <p>Поиск минимальных условных энергозатрат при требуемой однородности (берутся значения k и H<sub>тр</sub> из раздела «Моделирование»). Для каждой скорости n от 100 до 500 об/мин берётся минимальное время t, при котором H ≥ H<sub>тр</sub>, и вычисляется E.</p>
+  <div class="btns"><button class="btn y" onclick="optimize()">Оптимизировать</button></div>
+  <div id="optErr" class="err"></div>
+  <div class="res" id="optRes" style="margin-top:12px"></div>
+  <div class="chart" style="margin-top:12px"><canvas id="chO"></canvas></div>
+</section>
+
+<!-- 7. RESULTS -->
+<section id="results" class="sec">
+  <h2>Результаты и выводы</h2>
+  <div class="btns">
+    <button class="btn" onclick="runPresets()">Запустить 5 экспериментов</button>
+    <button class="btn" onclick="addCurrent()">Добавить текущий режим</button>
+    <button class="btn g" onclick="exps=[];renderExps()">Очистить таблицу</button>
+  </div>
+  <div id="expErr" class="err"></div>
+  <div class="wrap" style="margin-top:12px"><table>
+    <thead><tr><th>№</th><th>n, об/мин</th><th>t, мин</th><th>H, %</th><th>t<sub>тр</sub>, мин</th><th>E, усл. ед.</th><th>Требование</th></tr></thead>
+    <tbody id="expBody"></tbody>
+  </table></div>
+  <div class="res" id="expConc" style="margin-top:12px"></div>
+  <h3>Выводы</h3>
+  <p>1. Однородность растёт по экспоненте от произведения k·n·t: при одинаковом n·t результат одинаков, поэтому увеличение скорости или времени даёт быстрый рост однородности на начальном участке и насыщение вблизи 100 %.</p>
+  <p>2. Энергозатраты пропорциональны n² и линейно зависят от t. Поэтому повышение скорости дорого по энергии, а продление времени дешевле, но ограничено допустимым интервалом 1–20 мин.</p>
+  <p>3. Оптимальный режим — минимальная скорость, при которой время смешивания ещё укладывается в допустимый интервал и обеспечивает требуемую однородность. На графике оптимизации видно, что энергозатраты растут с ростом скорости.</p>
+  <p>4. Модель концентрации C(t) показывает, что система выходит на установившееся значение P за время порядка 3T, где T = V/G.</p>
+</section>
+
+</main>
+
+<script>
+const DEF={V:100,n:300,t:10,k:0.001,Hr:95,G1:60,C1:20,G2:40,C2:100,C0:20};
+const PRE=[[100,5],[200,10],[300,10],[400,15],[150,20]];
+const $=id=>document.getElementById(id);
+const H=(t,n,k)=>100*(1-Math.exp(-k*n*t));
+const E=(n,t)=>0.0001*n*n*t;
+const tReq=(Hr,n,k)=>-Math.log(1-Hr/100)/(k*n);
+const bestT=(n,Hr,k)=>Math.ceil(Math.max(1,tReq(Hr,n,k))*100)/100;
+const fmt=(x,d=2)=>isFinite(x)?x.toFixed(d):'—';
+const num=id=>parseFloat($(id).value);
+const series=(f,xs)=>xs.map(x=>({x,y:f(x)}));
+const ds=(label,data,color,w=2,dash=[])=>({label,data,borderColor:color,backgroundColor:color,borderWidth:w,borderDash:dash,pointRadius:0,tension:0.2});
+function errBox(id,errs){const b=$(id);b.innerHTML=errs.map(e=>`<div>⚠ ${e}</div>`).join('');b.style.display=errs.length?'block':'none';}
+function mk(id,xl,yl,title){return new Chart($(id),{type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:false,parsing:false,normalized:true,scales:{x:{type:'linear',title:{display:true,text:xl}},y:{title:{display:true,text:yl},beginAtZero:true}},plugins:{title:{display:true,text:title},legend:{position:'bottom'}}}});}
+let cT,cN,cC,cO;
+
+// Inputs
+function syncV(){ $('V').value=$('Vv').value; }
+function syncLabels(){ $('nVal').textContent=$('n').value; $('tVal').textContent=(+$('t').value).toFixed(1); }
+function readSim(){
+  const v={V:num('Vv'),n:num('n'),t:num('t'),k:num('k'),Hr:num('Hr')};
+  const e=[];
+  if(!(v.V>0)) e.push('Объём смеси должен быть больше 0.');
+  if(!(v.n>=100&&v.n<=500)) e.push('Скорость вращения — от 100 до 500 об/мин.');
+  if(!(v.t>=1&&v.t<=20)) e.push('Время смешивания — от 1 до 20 мин.');
+  if(!(v.k>0)) e.push('Коэффициент интенсивности должен быть больше 0.');
+  if(!(v.Hr>0&&v.Hr<100)) e.push('Требуемая однородность — от 0 до 100 %.');
+  return {v,e};
+}
+function onSim(){ syncLabels(); calcSim(); }
+
+// Simulation
+function calcSim(){
+  const {v,e}=readSim(); errBox('simErr',e); if(e.length) return null;
+  const h=H(v.t,v.n,v.k), en=E(v.n,v.t), tr=tReq(v.Hr,v.n,v.k);
+  $('resH').textContent=fmt(h)+' %';
+  $('resTr').textContent=tr>0?fmt(tr)+' мин':'—';
+  $('resE').textContent=fmt(en)+' усл. ед.';
+  $('resOk').innerHTML=h>=v.Hr?'<span class="ok">✔ Требуемая однородность достигнута</span>':'<span class="bad">✘ Однородность ниже требуемой — увеличьте скорость или время</span>';
+  $('formula').textContent=`H = 100·(1 − e^(−${v.k}·${v.n}·${v.t})) = ${fmt(h,3)} %`;
+  updateCharts(v);
+  return v;
+}
+function updateCharts(v){
+  const tAx=Array.from({length:41},(_,i)=>i*0.5);
+  const nAx=Array.from({length:81},(_,i)=>100+i*5);
+  cT.data.datasets=[
+    ds('100 об/мин',series(t=>H(t,100,v.k),tAx),'#7279D8',1.5),
+    ds('500 об/мин',series(t=>H(t,500,v.k),tAx),'#2F3584',1.5),
+    ds(`Текущий режим: ${v.n} об/мин`,series(t=>H(t,v.n,v.k),tAx),'#1924B1',3),
+    ds('H тр',[{x:0,y:v.Hr},{x:20,y:v.Hr}],'#FFBB00',1.5,[6,4])];
+  cT.options.scales.x.title.text='Время смешивания t, мин';
+  cT.options.scales.y.title.text='Однородность H, %';
+  cT.options.scales.y.max=100;
+  cT.update();
+  cN.data.datasets=[
+    ds(`Текущее время: ${v.t} мин`,series(n=>H(v.t,n,v.k),nAx),'#1924B1',3),
+    ds('5 мин',series(n=>H(5,n,v.k),nAx),'#7279D8',1.5),
+    ds('20 мин',series(n=>H(20,n,v.k),nAx),'#2F3584',1.5),
+    ds('H тр',[{x:100,y:v.Hr},{x:500,y:v.Hr}],'#FFBB00',1.5,[6,4])];
+  cN.options.scales.x.title.text='Скорость вращения n, об/мин';
+  cN.options.scales.y.title.text='Однородность H, %';
+  cN.options.scales.y.max=100;
+  cN.update();
+}
+
+// Concentration model
+function calcC(){
+  const g1=num('G1'),c1=num('C1'),g2=num('G2'),c2=num('C2'),V=num('V'),c0=num('C0');
+  const e=[];
+  if(!(g1>0&&g2>0)) e.push('G1 и G2 должны быть больше 0.');
+  if(!(V>0)) e.push('Объём V должен быть больше 0.');
+  if(!(c1>=0&&c1<=100&&c2>=0&&c2<=100)) e.push('Концентрации C1 и C2 — от 0 до 100 %.');
+  if(!(c0>=0&&c0<=100)) e.push('C0 — от 0 до 100 %.');
+  errBox('cErr',e); if(e.length) return;
+  const G=g1+g2, T=V/G, P=(g1*c1+g2*c2)/G;
+  const tAx=Array.from({length:61},(_,i)=>i*5*T/60);
+  $('cFormula').textContent=`G = ${fmt(G,1)};  T = V/G = ${fmt(T,3)};  P = ${fmt(P,3)} %`;
+  cC.data.datasets=[
+    ds('C(t)',series(t=>c0*Math.exp(-t/T)+P*(1-Math.exp(-t/T)),tAx),'#7D44D6',3),
+    ds('Установившаяся концентрация P',[{x:0,y:P},{x:5*T,y:P}],'#FFE400',1.5,[6,4])];
+  cC.options.scales.x.title.text='Время t, мин';
+  cC.options.scales.y.title.text='Концентрация C, %';
+  cC.options.scales.y.beginAtZero=false;
+  cC.update();
+  $('cRes').innerHTML=`Постоянная времени T = <b>${fmt(T,3)}</b>. Выход на 95 % установившегося значения — примерно через <b>${fmt(3*T,3)}</b> (≈3T). C(5T) ≈ ${fmt(c0*Math.exp(-5)+P*(1-Math.exp(-5)),2)} %.`;
+}
+
+// Optimization
+function optimize(){
+  const {v,e}=readSim(); errBox('optErr',e); if(e.length) return;
+  let best=null; const curve=[];
+  for(let n=100;n<=500;n+=1){
+    const t=bestT(n,v.Hr,v.k);
+    if(t<=20){ const en=E(n,t); curve.push({x:n,y:en}); if(!best||en<best.en) best={n,t,en}; }
+  }
+  if(!best){ $('optRes').innerHTML='<span class="bad">Нет режима, удовлетворяющего ограничениям 100 ≤ n ≤ 500, 1 ≤ t ≤ 20.</span>'; return; }
+  const h=H(best.t,best.n,v.k);
+  $('optRes').innerHTML=`<b>Оптимальная скорость вращения:</b> ${best.n} об/мин<br><b>Продолжительность смешивания:</b> ${fmt(best.t)} мин<br><b>Достигнутая однородность:</b> ${fmt(h)} %<br><b>Рассчитанные энергозатраты:</b> ${fmt(best.en)} усл. ед.`;
+  cO.data.datasets=[ds('Минимальные энергозатраты при H ≥ H тр',curve,'#4E10AE',2.5)];
+  cO.update();
+}
+
+// Experiments
+let exps=[];
+function addExp(n,t){
+  const k=num('k'),Hr=num('Hr');
+  const h=H(t,n,k);
+  exps.push({n,t,h,tr:tReq(Hr,n,k),en:E(n,t),ok:h>=Hr});
+}
+function runPresets(){ exps=[]; PRE.forEach(([n,t])=>addExp(n,t)); renderExps(); }
+function addCurrent(){
+  const {v,e}=readSim(); errBox('expErr',e); if(e.length) return;
+  addExp(v.n,v.t); renderExps();
+}
+function renderExps(){
+  $('expBody').innerHTML=exps.map((x,i)=>`<tr><td>${i+1}</td><td>${x.n}</td><td>${fmt(x.t,1)}</td><td>${fmt(x.h)}</td><td>${x.tr>0?fmt(x.tr):'—'}</td><td>${fmt(x.en)}</td><td class="${x.ok?'ok':'bad'}">${x.ok?'выполнено':'не выполнено'}</td></tr>`).join('')
+    || '<tr><td colspan="7">Нет экспериментов</td></tr>';
+  const ok=exps.filter(x=>x.ok);
+  const best=[...ok].sort((a,b)=>a.en-b.en)[0];
+  const maxH=exps.length?[...exps].sort((a,b)=>b.h-a.h)[0]:null;
+  $('expConc').innerHTML= best
+    ? `<b>Оптимальный режим среди экспериментов:</b> n = ${best.n} об/мин, t = ${fmt(best.t,1)} мин; однородность ${fmt(best.h)} %, энергозатраты ${fmt(best.en)} усл. ед.<br>Наибольшая однородность: ${fmt(maxH.h)} % (n = ${maxH.n}, t = ${fmt(maxH.t,1)} мин), но с большими энергозатратами.`
+    : (exps.length?'<span class="bad">Ни один эксперимент не достиг требуемой однородности.</span>':'');
+}
+
+// Reset
+function resetAll(){
+  $('Vv').value=DEF.V; $('V').value=DEF.V;
+  $('n').value=DEF.n; $('t').value=DEF.t; $('k').value=DEF.k; $('Hr').value=DEF.Hr;
+  for(const id of ['G1','C1','G2','C2','C0']) $(id).value=DEF[id];
+  ['simErr','cErr','optErr','expErr'].forEach(i=>errBox(i,[]));
+  $('optRes').innerHTML='';
+  syncLabels(); calcSim(); calcC();
+}
+
+// Navigation
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('active',s.id===b.dataset.t));
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  window.scrollTo(0,0);
+  [cT,cN,cC,cO].forEach(c=>c&&c.resize());
+});
+
+// Init
+cT=mk('chT','Время','Однородность, %','Однородность от времени');
+cN=mk('chN','Скорость','Однородность, %','Однородность от скорости');
+cC=mk('chC','Время','Концентрация, %','Концентрация C(t)');
+cO=mk('chO','Скорость вращения n, об/мин','Энергозатраты E, усл. ед.','Оптимизация: минимальные энергозатраты');
+syncLabels(); calcSim(); calcC(); runPresets();
+</script>
+</body>
+</html>
